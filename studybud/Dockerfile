@@ -7,7 +7,8 @@ COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r ./requirements.txt
-
+RUN python manage.py makemigrations 
+RUN python manage.py migrate
 # Expose the port on which the Django app will run
 EXPOSE 8000
 
