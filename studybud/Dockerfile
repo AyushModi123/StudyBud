@@ -9,7 +9,7 @@ COPY . .
 RUN pip install --no-cache-dir -r ./requirements.txt
 RUN python manage.py makemigrations 
 RUN python manage.py migrate
-RUN python manage.py createsuperuser --no-input
+RUN python manage.py create_superuser
 # Expose the port on which the Django app will run
 EXPOSE 8000
 
