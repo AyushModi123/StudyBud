@@ -49,7 +49,7 @@ virtualenv envname
 
 --> Activate the virtual environment :
 ```bash
-envname\scripts\activate
+envname\Scripts\activate
 
 ```
 
