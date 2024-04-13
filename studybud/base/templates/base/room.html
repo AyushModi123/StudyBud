@@ -74,8 +74,7 @@
         </div>
 
         <div class="room__conversation">
-          <div class="threads scroll">
-
+          <div class="threads scroll" id="threads-scroll">
 
             {% for message in room_messages %}
             <div class="thread">
@@ -142,12 +141,33 @@
 </main>
 <!-- <script src="static/js/script.js"></script> -->
 <script>
+async function getMessages() {
+  try {        
+    const response = await fetch('/api/rooms/{{ room.id }}/messages');
+    const data = await response.json();    
+    return data;
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    return [];
+  }
+}
+async function renderMessages() {
+  const messages = await getMessages();
+  console.log(messages)
+  console.log(messages[0].username)
+  
+}
+renderMessages()
 const chatSocket = new WebSocket('ws://{{ request.get_host }}/ws/chat/{{ room.id }}/');
 
 chatSocket.onmessage = function(e) {
   const data = JSON.parse(e.data);
-  // Handle incoming messages
+  // Handle incoming messages  
   console.log(data.message, data.username);
+};
+
+chatSocket.onerror = function(event) {
+  console.error('WebSocket error:', event);
 };
 
 chatSocket.onclose = function(e) {
@@ -157,6 +177,7 @@ chatSocket.onclose = function(e) {
 document.querySelector('#chat-message-input').focus();
 document.querySelector('#chat-message-input').onkeyup = function(e) {
   if (e.keyCode === 13) {
+    console.log(this.value)
     const message = this.value;
     chatSocket.send(JSON.stringify({
       'message': message,
