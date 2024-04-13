@@ -76,7 +76,7 @@
         <div class="room__conversation">
           <div class="threads scroll" id="threads-scroll">
 
-            {% for message in room_messages %}
+            <!-- {% for message in room_messages %}
             <div class="thread">
               <div class="thread__top">
                 <div class="thread__author">
@@ -106,7 +106,7 @@
                 {{message.body}}
               </div>
             </div>
-            {% endfor %}
+            {% endfor %} -->
           </div>
         </div>
 
@@ -141,6 +141,32 @@
 </main>
 <!-- <script src="static/js/script.js"></script> -->
 <script>
+function new_message_html(message){
+  return`
+    <div class="thread">
+      <div class="thread__top">
+        <div class="thread__author">
+          <a href="/user-profile/" + ${message.user.id} + " class="thread__authorInfo">
+            <div class="avatar avatar--small">
+              <img src="${message.avatar_url}" />
+            </div>
+            <span>@${message.username}</span>
+          </a>
+          <span class="thread__date">${message.timesince}</span>
+        </div>
+        <a href="/delete-message/" + ${message.id}">
+          <div class="thread__delete">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <title>remove</title>
+              <path d="M27.314 6.019l-1.333-1.333-9.98 9.981-9.981-9.981-1.333 1.333 9.981 9.981-9.981 9.98 1.333 1.333 9.981-9.98 9.98 9.98 1.333-1.333-9.98-9.98 9.98-9.981z"></path>
+            </svg>
+          </div>
+        </a>
+      </div>
+      <div class="thread__details">${message.body}</div>
+    </div>
+    `
+}
 async function getMessages() {
   try {        
     const response = await fetch('/api/rooms/{{ room.id }}/messages');
@@ -153,61 +179,41 @@ async function getMessages() {
 }
 async function renderMessages() {
   const messages = await getMessages();
+  messages.forEach(message => {    
+    document.getElementById("threads-scroll").innerHTML+=new_message_html(message)
+  });
 }
 renderMessages()
-const chatSocket = new WebSocket('ws://{{ request.get_host }}/ws/chat/{{ room.id }}/');
+if ('{{ request.user.is_authenticated }}' === 'True'){
+  const chatSocket = new WebSocket('ws://{{ request.get_host }}/ws/chat/{{ room.id }}/');
 
-chatSocket.onmessage = function(e) {
-  const data = JSON.parse(e.data);
-  // Handle incoming messages  
-  message = data.message
-  new_message_html = `
-  <div class="thread">
-    <div class="thread__top">
-      <div class="thread__author">
-        <a href="/user-profile/" + ${message.user.id} + " class="thread__authorInfo">
-          <div class="avatar avatar--small">
-            <img src="${message.avatar_url}" />
-          </div>
-          <span>@${message.username}</span>
-        </a>
-        <span class="thread__date">${message.timesince}</span>
-      </div>
-      <a href="/delete-message/" + ${message.id}">
-        <div class="thread__delete">
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-            <title>remove</title>
-            <path d="M27.314 6.019l-1.333-1.333-9.98 9.981-9.981-9.981-1.333 1.333 9.981 9.981-9.981 9.98 1.333 1.333 9.981-9.98 9.98 9.98 1.333-1.333-9.98-9.98 9.98-9.981z"></path>
-          </svg>
-        </div>
-      </a>
-    </div>
-    <div class="thread__details">${message.body}</div>
-  </div>
-  `
-  document.getElementById("threads-scroll").insertAdjacentHTML('afterbegin', new_message_html);
-  
-};
+  chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    // Handle incoming messages  
+    message = data.message
+    document.getElementById("threads-scroll").insertAdjacentHTML('afterbegin', new_message_html(message));
+    
+  };
 
-chatSocket.onerror = function(event) {
-  console.error('WebSocket error:', event);
-};
+  chatSocket.onerror = function(event) {
+    console.error('WebSocket error:', event);
+  };
 
-chatSocket.onclose = function(e) {
-  console.error('Chat socket closed unexpectedly');
-};
-
-document.querySelector('#chat-message-input').focus();
-document.querySelector('#chat-message-input').onkeyup = function(e) {
-  if (e.keyCode === 13) {
-    console.log(this.value)
-    const message = this.value;
-    chatSocket.send(JSON.stringify({
-      'message': message,
-      'username': '{{ request.user.username }}'
-    }));
-    this.value = '';
-  }
-};
+  chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+  };
+  document.querySelector('#chat-message-input').focus();
+  document.querySelector('#chat-message-input').onkeyup = function(e) {
+    if (e.keyCode === 13) {
+      console.log(this.value)
+      const message = this.value;
+      chatSocket.send(JSON.stringify({
+        'message': message,
+        'username': '{{ request.user.username }}'
+      }));
+      this.value = '';
+    }
+  };
+}
 </script>
 {% endblock content %}
