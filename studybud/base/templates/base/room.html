@@ -120,9 +120,9 @@
     <!-- Room End -->
 
     <!--   Start -->
-    <div class="participants">
-      <h3 class="participants__top">Participants <span>({{participants.count}} Joined)</span></h3>
-      <div class="participants__list scroll">
+    <div class="participants" id="participants-container">
+      <h3 class="participants__top" id="participants-heading">Participants <span>({{participants.count}} Joined)</span></h3>
+      <div class="participants__list scroll" id="participants-list">
         {% for user in participants %}
         <a href="{%  url 'user-profile' user.id %}" class="participant">
           <div class="avatar avatar--medium">
@@ -167,6 +167,21 @@ function new_message_html(message){
     </div>
     `
 }
+
+function new_participant_html(user){
+  return `  
+    <a href="/user-profile/" + ${user.id} class="participant">
+      <div class="avatar avatar--medium">
+        <img src="${user.avatar}" />
+      </div>
+      <p>
+        ${user.name}
+        <span>@${user.username}</span>
+      </p>
+    </a>  
+  `
+}
+
 async function getMessages() {
   try {        
     const response = await fetch('/api/rooms/{{ room.id }}/messages');
@@ -191,8 +206,14 @@ if ('{{ request.user.is_authenticated }}' === 'True'){
     const data = JSON.parse(e.data);
     // Handle incoming messages  
     message = data.message
+    is_new_participant = data.is_new_participant    
     document.getElementById("threads-scroll").insertAdjacentHTML('afterbegin', new_message_html(message));
-    
+    if(is_new_participant){
+      participant_count = data.participant_count
+      user = data.user      
+      document.getElementById('participants-heading').querySelector('span').textContent = `(${participant_count} Joined)`;
+      document.getElementById("participants-list").innerHTML+=new_participant_html(user);
+    }
   };
 
   chatSocket.onerror = function(event) {
@@ -204,12 +225,10 @@ if ('{{ request.user.is_authenticated }}' === 'True'){
   };
   document.querySelector('#chat-message-input').focus();
   document.querySelector('#chat-message-input').onkeyup = function(e) {
-    if (e.keyCode === 13) {
-      console.log(this.value)
+    if (e.keyCode === 13) {      
       const message = this.value;
       chatSocket.send(JSON.stringify({
-        'message': message,
-        'username': '{{ request.user.username }}'
+        'message': message        
       }));
       this.value = '';
     }

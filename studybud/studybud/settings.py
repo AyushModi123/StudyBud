@@ -180,3 +180,10 @@ SESSION_COOKIE_AGE = 60 * 60 # In Seconds
 #         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
 #     },
 # }
+
+#Don't use this backend in production!
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
