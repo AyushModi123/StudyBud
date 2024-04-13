@@ -1,6 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from .models import Room, Message
+from .api.serializers import RoomMessagesSerializer
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -29,7 +30,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
         username = text_data_json['username']
         room = await self.get_room()        
-        await Message.objects.acreate(
+        new_message = await Message.objects.acreate(
             user=self.scope['user'],
             room=room,
             body=message
@@ -38,19 +39,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message': message,
-                'username': username
+                'message': RoomMessagesSerializer(new_message, many=False).data,                
             }
         )
 
     # Receive message from room group
     async def chat_message(self, event):
-        message = event['message']
-        username = event['username']                
+        message = event['message']        
         await self.send(text_data= json.dumps({
-            'message': message,
-            'username': username,
-            'meetoo': 'ok'
+            'message': message,                        
         }))
 
     async def get_room(self):
