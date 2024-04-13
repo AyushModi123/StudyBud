@@ -130,7 +130,7 @@ env.bak/
 venv.bak/
 .vagrant
 Vagrant*
-
+temp.py
 # Spyder project settings
 .spyderproject
 .spyproject
