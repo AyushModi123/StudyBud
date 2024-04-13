@@ -40,13 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'base.apps.BaseConfig',
-
     'rest_framework',
     "corsheaders",
     'django_otp', 
     'django_otp.plugins.otp_totp',
+    'channels'
 ]
 
 AUTH_USER_MODEL = 'base.User'
@@ -85,7 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'studybud.wsgi.application'
-
+ASGI_APPLICATION = 'studybud.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -171,7 +170,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 5 * 60 # In Seconds
+SESSION_COOKIE_AGE = 60 * 60 # In Seconds
 
 # STORAGES = {    
 #     "default": {
@@ -181,3 +180,10 @@ SESSION_COOKIE_AGE = 5 * 60 # In Seconds
 #         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
 #     },
 # }
+
+#Don't use this backend in production!
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}

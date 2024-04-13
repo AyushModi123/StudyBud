@@ -2,6 +2,12 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
+from .consumers import ChatConsumer
+
+websocket_urlpatterns = [
+    path('ws/chat/<str:room_id>/', ChatConsumer.as_asgi())
+]
+
 urlpatterns = [
     path('login/', views.loginPage, name="login"),
     path('logout/', views.logoutUser, name="logout"),
