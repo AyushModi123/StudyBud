@@ -200,7 +200,7 @@ async function renderMessages() {
 }
 renderMessages()
 if ('{{ request.user.is_authenticated }}' === 'True'){
-  const chatSocket = new WebSocket('ws://{{ request.get_host }}/ws/chat/{{ room.id }}/');
+  const chatSocket = new WebSocket('wss://{{ request.get_host }}/ws/chat/{{ room.id }}/');
 
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
